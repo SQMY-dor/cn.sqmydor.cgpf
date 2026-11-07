@@ -1,0 +1,32 @@
+name: Attach release APK
+
+# Attaches the locally signed APK (kept on the `dist` branch) to a published release,
+# so the asset carries the same signature as previous builds and installs over them.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (e.g. v1.1.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dist
+      - name: Upload APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          ver="${TAG#v}"
+          f="CGPF-Merged-${ver}.apk"
+          test -f "$f" || { echo "missing $f on dist branch"; exit 1; }
+          gh release upload "$TAG" "$f" --clobber --repo "$GITHUB_REPOSITORY"
