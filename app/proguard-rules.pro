@@ -4,3 +4,5 @@
     public <init>();
 }
 -dontwarn androidx.annotation.**
+-dontwarn androidx.window.extensions.**
+-dontwarn androidx.window.sidecar.**

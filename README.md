@@ -9,7 +9,7 @@
 | 隐藏国行 GMS 特征 | 思路来自 [EX3124/UnlockCNGMS](https://github.com/EX3124/UnlockCNGMS)（重写实现） | `com.google.android.gms`、`com.android.vending`（可在 LSPosed 自行添加） | `ApplicationPackageManager.hasSystemFeature(String[,int])` 对 `cn.google.services`、`com.google.android.feature.services_updater` 返回 false，并从 `getSystemAvailableFeatures()` 中过滤 |
 
 ## 设置
-打开模块（桌面图标或 LSPosed 里的模块设置）：两个功能各有开关，代理端口 1–65535，默认 **7890**。
+打开模块（桌面图标或 LSPosed 里的模块设置），界面基于 [miuix](https://github.com/compose-miuix-ui/miuix)（Compose）：各功能开关即时保存；代理端口 1–65535，默认 **7890**，点“保存”生效。
 设置保存在框架的 Remote Preferences（`getRemotePreferences("config")`），被 Hook 进程实时读取；如未生效，重启对应作用域应用。
 
 ## 要求
@@ -18,7 +18,7 @@
 
 ## 构建
 JDK 21、Android SDK platform 37 / build-tools 37.0.0：`./gradlew assembleRelease`。
-GitHub Actions 见 `.github/workflows/build.yml`（可选通过 secrets 配置签名，否则用 debug 签名）。
+GitHub Actions（`.github/workflows/build.yml`）：推送 main 或 `v*` 标签即编译；配置了 `KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD` 四个 secrets 时用发布密钥签名，并自动发布到 Releases（`v<versionName>`，附 APK 与 sha256，说明取自 CHANGELOG）。未配置时只上传 Artifact。更新日志见 `CHANGELOG.md`。
 
 ## 许可
 - 探测修复部分移植自 ColorOS GMS Probe Fix，Copyright (c) 2026 rkbkosp，MIT，见 `LICENSE-ColorOSGmsProbeFix`。

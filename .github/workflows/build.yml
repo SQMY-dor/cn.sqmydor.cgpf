@@ -2,10 +2,14 @@ name: Build
 
 on:
   push:
-    branches-ignore: [dist]
-    tags-ignore: ['**']
+    branches: [main]
+    tags: ['v*']
+    paths-ignore: ['**.md']
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,18 +26,50 @@ jobs:
       - name: Install SDK packages
         run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Decode signing key (optional)
+
+      - name: Decode signing key
         if: ${{ env.KEYSTORE_BASE64 != '' }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.jks
-          echo "CGPF_KEYSTORE=$RUNNER_TEMP/release.jks" >> $GITHUB_ENV
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "CGPF_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
       - name: Build release APK
         env:
           CGPF_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           CGPF_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           CGPF_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
+
+      - name: Rename APK
+        id: apk
+        run: |
+          ver=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          out="CGPF-Merged-${ver}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$out"
+          sha256sum "$out" > "$out.sha256"
+          echo "ver=$ver" >> "$GITHUB_OUTPUT"
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+
       - uses: actions/upload-artifact@v4
         with:
-          name: CGPF-Merged-release
-          path: app/build/outputs/apk/release/*.apk
+          name: CGPF-Merged-${{ steps.apk.outputs.ver }}
+          path: CGPF-Merged-*.apk*
+
+      # Publish to Releases: pushing a tag v<version> or a main commit whose
+      # versionName has no release yet. Only with the release key, so every
+      # published APK installs over the previous one.
+      - name: Publish release
+        if: ${{ github.event_name != 'pull_request' && env.KEYSTORE_BASE64 != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.apk.outputs.ver }}
+          FILE: ${{ steps.apk.outputs.file }}
+        run: |
+          tag="v$VER"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$FILE" "$FILE.sha256" --clobber
+          else
+            notes=$(awk -v v="$VER" '$0 ~ "^## " v {f=1; next} /^## /{f=0} f' CHANGELOG.md)
+            gh release create "$tag" "$FILE" "$FILE.sha256" \
+              --title "$tag" --target "$GITHUB_SHA" --notes "${notes:-CGPF-Merged $VER}"
+          fi

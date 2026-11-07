@@ -2,6 +2,8 @@
 <resources>
     <string name="app_name">ColorOS GMS 修复合集</string>
     <string name="module_description">合并 ColorOS GMS Probe Fix 与 UnlockCNGMS：经本地代理真实探测 Google 连通性，对 Google 应用隐藏国行 GMS 特征，并在代理就绪时自动触发 RKP 续签。代理端口可设置，默认 7890。</string>
+    <string name="section_features">功能</string>
+    <string name="section_rkp">RKP 远程密钥</string>
     <string name="probe_fix">GMS 连通性探测修复</string>
     <string name="probe_fix_desc">作用域：com.oplus.battery / com.oplus.athena。通过 127.0.0.1 的 HTTP 代理请求 generate_204，只有收到真实 204 才判定 Google 可用。</string>
     <string name="hide_cn">隐藏国行 GMS 特征</string>
@@ -14,9 +16,9 @@
     <string name="proxy_port_desc">1–65535，默认 7890（Clash/Mihomo 混合端口）。</string>
     <string name="reset_default">恢复默认</string>
     <string name="save">保存</string>
-    <string name="saved">已保存</string>
+    <string name="saved">端口已保存</string>
     <string name="port_invalid">端口必须是 1 到 65535 之间的整数</string>
-    <string name="apply_note">提示：设置会同步到目标进程；如未生效，在 LSPosed 中重启对应作用域应用或重启手机。</string>
+    <string name="apply_note">提示：开关即时保存并同步到目标进程；如未生效，在 LSPosed 中重启对应作用域应用或重启手机。</string>
     <string name="status_inactive">未连接到 LSPosed 服务：请先在 LSPosed 管理器中启用本模块（需要支持 API 102 的框架），然后重新打开此页面。</string>
     <string name="status_active">已连接：%1$s %2$s（API %3$d）</string>
     <string name="status_error">读取/保存设置出错：%1$s</string>

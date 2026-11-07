@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.agp.app)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -11,8 +12,8 @@ android {
         applicationId = "cn.sqmydor.cgpf"
         minSdk = 29
         targetSdk = 37
-        versionCode = 110
-        versionName = "1.1.0"
+        versionCode = 120
+        versionName = "1.2.0"
     }
 
     signingConfigs {
@@ -34,9 +35,13 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles("proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs["release"]
         }
+    }
+
+    buildFeatures {
+        compose = true
     }
 
     compileOptions {
@@ -47,7 +52,11 @@ android {
     packaging {
         resources {
             merges += "META-INF/xposed/*"
-            excludes += "**"
+            excludes += listOf(
+                "kotlin/**", "DebugProbesKt.bin", "META-INF/*.version",
+                "META-INF/*.kotlin_module", "META-INF/androidx/**", "META-INF/com/**",
+                "META-INF/services/**", "META-INF/LICENSE*", "META-INF/NOTICE*",
+            )
         }
     }
 
@@ -60,4 +69,7 @@ android {
 dependencies {
     compileOnly(libs.libxposed.api)
     implementation(libs.libxposed.service)
+    implementation(libs.activity.compose)
+    implementation(libs.miuix.ui)
+    implementation(libs.miuix.preference)
 }
